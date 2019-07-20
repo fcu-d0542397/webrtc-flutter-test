@@ -25,7 +25,7 @@ class GetUserMediaSample extends StatefulWidget {
 
 class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   bool _datachannel = false;
-  String _serverAddress = '10.22.12.94';
+  String _serverAddress = '10.22.6.223';
   MediaStream _localStream;
   final _localRenderer = new RTCVideoRenderer();
   bool _inCalling = false;

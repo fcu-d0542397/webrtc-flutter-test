@@ -12,7 +12,7 @@ class CallSample extends StatefulWidget {
   CallSample({Key key, @required this.ip}) : super(key: key);
 
   @override
-  _CallSampleState createState() => new _CallSampleState(this.ip);
+  _CallSampleState createState() => new _CallSampleState(serverIP: ip);
 }
 
 class _CallSampleState extends State<CallSample> {
@@ -24,16 +24,15 @@ class _CallSampleState extends State<CallSample> {
   RTCVideoRenderer _localRenderer = new RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = new RTCVideoRenderer();
   bool _inCalling = false;
-  String serverIP;
+  final String serverIP;
 
-  _CallSampleState(String ip) {
-    this.serverIP = ip;
-  }
+  _CallSampleState({Key key, @required this.serverIP});
 
   @override
   initState() {
     super.initState();
     initRenderers();
+    _connect();
   }
 
   initRenderers() async {
@@ -51,7 +50,9 @@ class _CallSampleState extends State<CallSample> {
 
   void _connect() async {
     if (_signaling == null) {
-      _signaling = new Signaling(serverIP, _displayName)..connect();
+      _signaling = new Signaling(serverIP, _displayName);
+      await _signaling
+        ..connect();
 
       _signaling.onStateChange = (SignalingState state) {
         switch (state) {
@@ -96,9 +97,11 @@ class _CallSampleState extends State<CallSample> {
         _remoteRenderer.srcObject = null;
       });
     }
+
+  
   }
 
-  invitePeer(context, peerId, use_screen) async {
+  _invitePeer(context, peerId, use_screen) async {
     if (_signaling != null && peerId != _selfId) {
       _signaling.invite(peerId, 'video', use_screen);
     }
@@ -118,6 +121,7 @@ class _CallSampleState extends State<CallSample> {
 
   _buildRow(context, peer) {
     var self = (peer['id'] == _selfId);
+    print("12345646564:　" + peer.toString());
     return ListBody(children: <Widget>[
       ListTile(
         title: Text(self
@@ -131,12 +135,12 @@ class _CallSampleState extends State<CallSample> {
                 children: <Widget>[
                   IconButton(
                     icon: const Icon(Icons.videocam),
-                    onPressed: () => invitePeer(context, peer['id'], false),
+                    onPressed: () => _invitePeer(context, peer['id'], false),
                     tooltip: 'Video calling',
                   ),
                   IconButton(
                     icon: const Icon(Icons.screen_share),
-                    onPressed: () => invitePeer(context, peer['id'], true),
+                    onPressed: () => _invitePeer(context, peer['id'], true),
                     tooltip: 'Screen sharing',
                   )
                 ])),
@@ -148,36 +152,71 @@ class _CallSampleState extends State<CallSample> {
 
   @override
   Widget build(BuildContext context) {
-    final myController = TextEditingController();
-    String temp;
     return new Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: myController,
-              decoration: InputDecoration(
-                  border: InputBorder.none, hintText: 'Enter a search term'),
-            ),
-            RaisedButton(
-              color: Color(0xff476cfb),
-              onPressed: () async {
-                // temp = myController.text;
-                // this.serverIP = temp;
-                await _connect();
-                //print(_peers.toString());
-                invitePeer(context, _peers[0]['id'], false);
-              },
-              elevation: 4.0,
-              splashColor: Colors.blueGrey,
-              child: Text(
-                '傳送',
-                style: TextStyle(color: Colors.white, fontSize: 16.0),
-              ),
-            ),
-          ],
-        ),
+      appBar: new AppBar(
+        title: new Text('P2P Call Sample'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: null,
+            tooltip: 'setup',
+          ),
+        ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _inCalling
+          ? new SizedBox(
+              width: 200.0,
+              child: new Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    FloatingActionButton(
+                      child: const Icon(Icons.switch_camera),
+                      onPressed: _switchCamera,
+                    ),
+                    FloatingActionButton(
+                      onPressed: _hangUp,
+                      tooltip: 'Hangup',
+                      child: new Icon(Icons.call_end),
+                      backgroundColor: Colors.pink,
+                    ),
+                    FloatingActionButton(
+                      child: const Icon(Icons.mic_off),
+                      onPressed: _muteMic,
+                    )
+                  ]))
+          : null,
+      body: _inCalling
+          ? OrientationBuilder(builder: (context, orientation) {
+              return new Container(
+                child: new Stack(children: <Widget>[
+                  new Positioned(
+                      left: 0.0,
+                      right: 0.0,
+                      top: 0.0,
+                      bottom: 0.0,
+                      child: new Container(
+                        margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height,
+                        child: new RTCVideoView(_remoteRenderer),
+                        decoration: new BoxDecoration(color: Colors.black54),
+                      )),
+                  new Positioned(
+                    left: 20.0,
+                    top: 20.0,
+                    child: new Container(
+                      width: orientation == Orientation.portrait ? 90.0 : 120.0,
+                      height:
+                          orientation == Orientation.portrait ? 120.0 : 90.0,
+                      child: new RTCVideoView(_localRenderer),
+                      decoration: new BoxDecoration(color: Colors.black54),
+                    ),
+                  ),
+                ]),
+              );
+            })
+          :  FloatingActionButton(onPressed: ()=> _invitePeer(context, _peers[0]['id'], false) )
     );
   }
 }
