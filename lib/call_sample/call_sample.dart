@@ -12,7 +12,7 @@ class CallSample extends StatefulWidget {
   CallSample({Key key, @required this.ip}) : super(key: key);
 
   @override
-  _CallSampleState createState() => new _CallSampleState();
+  _CallSampleState createState() => new _CallSampleState(this.ip);
 }
 
 class _CallSampleState extends State<CallSample> {
@@ -26,13 +26,14 @@ class _CallSampleState extends State<CallSample> {
   bool _inCalling = false;
   String serverIP;
 
-  _CallSampleState({Key key, });
+  _CallSampleState(String ip) {
+    this.serverIP = ip;
+  }
 
   @override
   initState() {
     super.initState();
     initRenderers();
-    
   }
 
   initRenderers() async {
@@ -148,7 +149,7 @@ class _CallSampleState extends State<CallSample> {
   @override
   Widget build(BuildContext context) {
     final myController = TextEditingController();
-    String temp ;
+    String temp;
     return new Scaffold(
       body: SafeArea(
         child: Column(
@@ -160,16 +161,12 @@ class _CallSampleState extends State<CallSample> {
             ),
             RaisedButton(
               color: Color(0xff476cfb),
-              onPressed: ()async {
-
-                temp = myController.text;
-                this.serverIP = temp;
+              onPressed: () async {
+                // temp = myController.text;
+                // this.serverIP = temp;
                 await _connect();
                 //print(_peers.toString());
                 invitePeer(context, _peers[0]['id'], false);
-
-                
-
               },
               elevation: 4.0,
               splashColor: Colors.blueGrey,

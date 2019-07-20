@@ -10,16 +10,11 @@ import 'call_sample/data_channel_sample.dart';
  * 
  */
 
-
-
 void main() => runApp(MaterialApp(initialRoute: '/', routes: {
       '/': (context) {
         return GetUserMediaSample();
       },
-      
     }));
-
-
 
 class GetUserMediaSample extends StatefulWidget {
   static String tag = 'get_usermedia_sample';
@@ -30,7 +25,7 @@ class GetUserMediaSample extends StatefulWidget {
 
 class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   bool _datachannel = false;
-  String _serverAddress = '192.168.43.240';
+  String _serverAddress = '10.22.12.94';
   MediaStream _localStream;
   final _localRenderer = new RTCVideoRenderer();
   bool _inCalling = false;
@@ -59,7 +54,8 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
       "audio": true,
       "video": {
         "mandatory": {
-          "minWidth":'640', // Provide your own width, height and frame rate here
+          "minWidth":
+              '640', // Provide your own width, height and frame rate here
           "minHeight": '480',
           "minFrameRate": '30',
         },
@@ -114,15 +110,13 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
         },
       ),
       floatingActionButton: new FloatingActionButton(
-        onPressed:() async {
-
-            Navigator.push(
+        onPressed: () async {
+          Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      _datachannel? DataChannelSample(ip: _serverAddress) : CallSample(ip: _serverAddress)));
-
-
+                  builder: (BuildContext context) => _datachannel
+                      ? DataChannelSample(ip: _serverAddress)
+                      : CallSample(ip: _serverAddress)));
         },
         tooltip: _inCalling ? 'Hangup' : 'Call',
         child: new Icon(_inCalling ? Icons.call_end : Icons.phone),
